@@ -1,5 +1,5 @@
-<img width="1680" height="910" alt="image" src="https://github.com/user-attachments/assets/38739cfb-ea7c-4ee1-bfc1-354867c413c2" />
-<img width="1571" height="847" alt="image" src="https://github.com/user-attachments/assets/4fd45377-1222-483b-9007-0a738743f6f5" />
+<img width="800" height="600" alt="image" src="https://github.com/user-attachments/assets/38739cfb-ea7c-4ee1-bfc1-354867c413c2" />
+<img width="800" height="600" alt="image" src="https://github.com/user-attachments/assets/4fd45377-1222-483b-9007-0a738743f6f5" />
 
 
 1. Run clickhouse on docker container and make table with following schema:
