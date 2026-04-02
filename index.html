@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SQL Builder</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      max-width: 1100px;
+    }
+    .row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    select, input, button, textarea {
+      padding: 8px 10px;
+      font-size: 14px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 80px;
+      font-family: monospace;
+    }
+    #chartWrap {
+      margin-top: 24px;
+      height: 500px;
+    }
+    #result {
+      margin-top: 16px;
+      white-space: pre-wrap;
+      font-family: monospace;
+      background: #f5f5f5;
+      padding: 12px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>SQL Builder</h1>
+
+  <div class="row">
+    <select id="metric">
+      <option value="SUM(`t.paid_amount`) as value">Выручка</option>
+      <option value="COUNT() as value">Количество записей</option>
+      <option value="AVG(`t.paid_amount`) as value">Средний чек</option>
+    </select>
+
+    <select id="group">
+      <option value="toDate(`t.purchase_date_msk`) as label" data-group="toDate(`t.purchase_date_msk`)" data-type="date">Дата покупки</option>
+      <option value="`t.city_from_name` as label" data-group="`t.city_from_name`" data-type="category">Город отправления</option>
+      <option value="`t.city_to_name` as label" data-group="`t.city_to_name`" data-type="category">Город прибытия</option>
+      <option value="`t.payment_method_code` as label" data-group="`t.payment_method_code`" data-type="category">Метод оплаты</option>
+    </select>
+
+    <button id="runBtn">Выполнить</button>
+  </div>
+
+  <div class="row">
+    <input id="whereInput" style="flex:1" placeholder="WHERE, например: `t.city_from_name` = 'Казань'" />
+  </div>
+
+  <div class="row">
+    <textarea id="sqlPreview" readonly></textarea>
+  </div>
+
+  <div id="chartWrap">
+    <canvas id="chart"></canvas>
+  </div>
+
+  <div id="result"></div>
+
+  <script>
+    let chartInstance = null;
+
+    function buildPayload() {
+      const metric = document.getElementById("metric").value;
+      const groupEl = document.getElementById("group");
+      const groupSelect = groupEl.value;
+      const groupBy = groupEl.selectedOptions[0].dataset.group;
+      const where = document.getElementById("whereInput").value.trim();
+
+      return {
+        select: [groupSelect, metric],
+        group_by: [groupBy],
+        where
+      };
+    }
+
+    function updateSqlPreview(payload) {
+      let sql = `SELECT ${payload.select.join(", ")} FROM routes_raw`;
+      if (payload.where) sql += ` WHERE ${payload.where}`;
+      if (payload.group_by?.length) sql += ` GROUP BY ${payload.group_by.join(", ")}`;
+      sql += ` ORDER BY 1`;
+      document.getElementById("sqlPreview").value = sql;
+    }
+
+    function detectChartType() {
+      const groupEl = document.getElementById("group");
+      return groupEl.selectedOptions[0].dataset.type === "date" ? "line" : "bar";
+    }
+
+    async function runQuery() {
+      const payload = buildPayload();
+      updateSqlPreview(payload);
+
+      const res = await fetch("http://localhost:8080/query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        document.getElementById("result").textContent = text;
+        return;
+      }
+
+      const data = await res.json();
+      document.getElementById("result").textContent = JSON.stringify(data.slice(0, 10), null, 2);
+
+      const labels = data.map(x => x.label);
+      const values = data.map(x => x.value);
+
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      chartInstance = new Chart(document.getElementById("chart"), {
+        type: detectChartType(),
+        data: {
+          labels,
+          datasets: [{
+            label: "Значение",
+            data: values
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    }
+
+    document.getElementById("runBtn").addEventListener("click", runQuery);
+  </script>
+</body>
+</html>

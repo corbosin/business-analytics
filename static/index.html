@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SQL Builder</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="page">
+    <h1>Конструктор отчёта</h1>
+
+    <section class="panel">
+      <h2>Период</h2>
+
+      <div class="grid grid-4">
+        <div class="field">
+          <label for="dateFrom">Дата от</label>
+          <input type="date" id="dateFrom" />
+        </div>
+
+        <div class="field">
+          <label for="dateTo">Дата до</label>
+          <input type="date" id="dateTo" />
+        </div>
+
+        <div class="field">
+          <label for="dateField">Поле даты</label>
+          <select id="dateField">
+            <option value="departure_date">Дата отправления</option>
+            <option value="purchase_date">Дата покупки</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="grain">Грануляция</label>
+          <select id="grain">
+            <option value="day">По дням</option>
+            <option value="week">По неделям</option>
+            <option value="month">По месяцам</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Метрики</h2>
+      <div id="metricsBox" class="checkbox-grid"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Дополнительные группировки</h2>
+      <div id="groupsBox" class="checkbox-grid"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-header">
+        <h2>Фильтры</h2>
+        <button id="addFilterBtn" type="button">Добавить фильтр</button>
+      </div>
+
+      <div id="filtersContainer" class="filters-container"></div>
+    </section>
+
+    <section class="panel">
+      <div class="actions">
+        <button id="runBtn" type="button" class="primary">Посчитать</button>
+      </div>
+      <div id="statusBox" class="status-box"></div>
+    </section>
+
+    <section class="panel">
+      <div class="tabs">
+        <button type="button" class="tab active" data-view="chart">График</button>
+        <button type="button" class="tab" data-view="table">Таблица</button>
+      </div>
+
+      <div id="chartView" class="view active">
+        <div class="chart-wrap">
+          <canvas id="chart"></canvas>
+        </div>
+      </div>
+
+      <div id="tableView" class="view">
+        <div class="table-wrap">
+          <table id="resultTable"></table>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>SQL preview</h2>
+      <textarea id="sqlPreview" readonly></textarea>
+    </section>
+
+    <section class="panel">
+      <h2>Ответ API</h2>
+      <pre id="debug"></pre>
+    </section>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
